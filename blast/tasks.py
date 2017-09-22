@@ -75,14 +75,13 @@ def run_blast_task(task_id, args_list, file_prefix, blast_info):
         json_path = file_prefix + '.json'
         type_func = {'str': str, 'float': float, 'int': int}
         hsp_list = []
-        def remove_comma_f(value):
-            if type(value) == str:
-                return value.replace(",", "")
-            else:
-                return value
-            
         with open(csv_path, 'rb') as f:
-            hsp_list = [[type_func[convert](remove_comma_f(value)) for convert, value in zip(blast_info['col_types'], row)] for row in csv.reader(f)]
+            for row in csv.reader(f):
+                if len(row) > 18:
+                    num = len(row)-18
+                    row = [",".join(row[0:num+1])] + row[num+1:]
+                temp = [type_func[convert](value) for convert, value in zip(blast_info['col_types'], row)]
+                hsp_list.append(temp)
         # generate gff3 files
         try:
             blast_program = path.basename(args_list[0][0])
